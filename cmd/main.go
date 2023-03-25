@@ -18,11 +18,11 @@ type Response struct {
 	Body       string            `json:"body"`
 }
 
-func makeResponse(resonse string, status int) Response {
+func makeResponse(response string, status int) Response {
 	return Response{
 		StatusCode: status,
 		Headers:    map[string]string{"Content-Type": "application/json"},
-		Body:       resonse,
+		Body:       response,
 	}
 }
 
