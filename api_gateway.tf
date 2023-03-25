@@ -15,7 +15,6 @@ resource "aws_api_gateway_resource" "proxy" {
   parent_id   = aws_api_gateway_rest_api.hello_world_api.root_resource_id
   path_part   = "{proxy+}"
 }
-
 resource "aws_api_gateway_method" "method" {
   rest_api_id   = aws_api_gateway_rest_api.hello_world_api.id
   resource_id   = aws_api_gateway_resource.proxy.id
@@ -23,7 +22,24 @@ resource "aws_api_gateway_method" "method" {
   authorization = "NONE"
 }
 
-# Next create an Integration resource to integrate the proxy with our backend endpoint, our lambda.
+## The proxy resource cannot match an empty path at the root of the API
+## We need to create a separate resource for the root path as well
+resource "aws_api_gateway_method" "proxy_root" {
+  rest_api_id   = aws_api_gateway_rest_api.hello_world_api.id
+  resource_id   = aws_api_gateway_rest_api.hello_world_api.root_resource_id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+resource "aws_api_gateway_integration" "lambda_root" {
+  rest_api_id             = aws_api_gateway_rest_api.hello_world_api.id
+  resource_id             = aws_api_gateway_method.proxy_root.resource_id
+  http_method             = aws_api_gateway_method.proxy_root.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.hello_world.invoke_arn
+}
+
+# Create an Integration resource to integrate the proxy with our backend endpoint, our lambda.
 # Each method on an API gateway resource has an integration which specifies where incoming requests are routed. Add the following configuration to specify that requests to this method should be sent to the Lambda function.
 resource "aws_api_gateway_integration" "lambda_integration" {
   rest_api_id             = aws_api_gateway_rest_api.hello_world_api.id
@@ -34,7 +50,9 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   uri                     = aws_lambda_function.hello_world.invoke_arn
 }
 
-# Gives an external source (in our case the API gateway) permission to access the Lambda function.
+# By default any two AWS services have no access to one another, 
+# until access is explicitly granted. For Lambda functions, access is granted using the 
+# aws_lambda_permission resource. This lets the API gateway have access.
 resource "aws_lambda_permission" "api_permission" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
@@ -43,6 +61,7 @@ resource "aws_lambda_permission" "api_permission" {
   source_arn    = "${aws_api_gateway_rest_api.hello_world_api.execution_arn}/*/*"
 }
 
+# Finally, we need to deploy the API gateway in order to expose the API at a URL
 resource "aws_api_gateway_deployment" "deployment" {
   depends_on  = [aws_api_gateway_integration.lambda_integration] # Wait for the API gateway integration to create
   rest_api_id = aws_api_gateway_rest_api.hello_world_api.id
