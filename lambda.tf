@@ -2,7 +2,7 @@
 # The first field, resource type, is required to match terraform specs.
 # The second field, reference name, is just our own name for the resource.
 resource "aws_iam_role" "lambda_role" {
-  name = "hello_world_lambda_role"
+  name = "go_lambda_lambda_role"
 
   assume_role_policy = <<EOF
 {
@@ -23,7 +23,7 @@ resource "aws_iam_role" "lambda_role" {
 
 # This is the policy that will be attached to the role
 resource "aws_iam_policy" "lambda_policy" {
-  name        = "hello_world_lambda_policy"
+  name        = "go_lambda_lambda_policy"
   path        = "/"
   description = "IAM policy for hello world lambda function"
   policy      = <<EOF
@@ -51,18 +51,18 @@ resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
 }
 
 # Use a zip file of the binary to upload and run
-data "archive_file" "hello_world_archive" {
+data "archive_file" "go_lambda_archive" {
   type        = "zip"
-  source_file = "bin/hello_world"
-  output_path = "hello_world.zip"
+  source_file = "bin/go_lambda"
+  output_path = "go_lambda.zip"
 }
 
 # Create the lambda function, pointing it at the binary
-resource "aws_lambda_function" "hello_world" {
-  function_name    = "hello_world"
-  filename         = data.archive_file.hello_world_archive.output_path
-  source_code_hash = data.archive_file.hello_world_archive.output_base64sha256
-  handler          = "hello_world"
+resource "aws_lambda_function" "go_lambda" {
+  function_name    = "go_lambda"
+  filename         = data.archive_file.go_lambda_archive.output_path
+  source_code_hash = data.archive_file.go_lambda_archive.output_base64sha256
+  handler          = "go_lambda"
   role             = aws_iam_role.lambda_role.arn
   runtime          = "go1.x"
   memory_size      = 128

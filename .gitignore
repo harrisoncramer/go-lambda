@@ -38,3 +38,4 @@ hello_world.zip
 
 ## Golang
 bin/*
+*.zip
