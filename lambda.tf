@@ -4,21 +4,18 @@
 resource "aws_iam_role" "lambda_role" {
   name = "go_lambda_lambda_role"
 
-  assume_role_policy = <<EOF
-{
- "Version": "2012-10-17",
- "Statement": [
-   {
-     "Action": "sts:AssumeRole",
-     "Principal": {
-       "Service": "lambda.amazonaws.com"
-     },
-     "Effect": "Allow",
-     "Sid": ""
-   }
- ]
-}
-  EOF
+  assume_role_policy = jsonencode({
+    Version : "2012-10-17",
+    Statement : [
+      {
+        Action : "sts:AssumeRole",
+        Principal : {
+          Service : "lambda.amazonaws.com"
+        },
+        Effect : "Allow",
+      }
+    ]
+  })
 }
 
 # This is the policy that will be attached to the role
@@ -26,22 +23,20 @@ resource "aws_iam_policy" "lambda_policy" {
   name        = "go_lambda_lambda_policy"
   path        = "/"
   description = "IAM policy for hello world lambda function"
-  policy      = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      "Resource": "arn:aws:logs:*:*:*",
-      "Effect": "Allow"
-    }
-  ]
-}
-  EOF
+  policy = jsonencode({
+    Version : "2012-10-17",
+    Statement : [
+      {
+        Action : [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource : "arn:aws:logs:*:*:*",
+        Effect : "Allow"
+      }
+    ]
+  })
 }
 
 # This is the actual attachment of the policy to the role
