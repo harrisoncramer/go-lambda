@@ -7,9 +7,7 @@ resource "aws_api_gateway_rest_api" "go_lambda_api" {
   description = "The API gateway for our hello world application. We could add more functions in the future if we wanted to."
 }
 
-# Create a resource within the REST API that proxies requests to resources
-# The special path_part value "{proxy+}" activates proxy behavior, which means that this resource will match any request path.
-# This means that all requests (GET/POST etc) on ALL paths will go through this proxy
+# Create a resource within the REST API that sends requests to /test/hello to our lambda
 resource "aws_api_gateway_resource" "proxy" {
   rest_api_id = aws_api_gateway_rest_api.go_lambda_api.id
   parent_id   = aws_api_gateway_rest_api.go_lambda_api.root_resource_id
@@ -22,25 +20,9 @@ resource "aws_api_gateway_method" "method" {
   authorization = "NONE"
 }
 
-## The proxy resource cannot match an empty path at the root of the API
-## We need to create a separate resource for the root path as well
-resource "aws_api_gateway_method" "proxy_root" {
-  rest_api_id   = aws_api_gateway_rest_api.go_lambda_api.id
-  resource_id   = aws_api_gateway_rest_api.go_lambda_api.root_resource_id
-  http_method   = "ANY"
-  authorization = "NONE"
-}
-resource "aws_api_gateway_integration" "lambda_root" {
-  rest_api_id             = aws_api_gateway_rest_api.go_lambda_api.id
-  resource_id             = aws_api_gateway_method.proxy_root.resource_id
-  http_method             = aws_api_gateway_method.proxy_root.http_method
-  integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.go_lambda.invoke_arn
-}
-
 # Create an Integration resource to integrate the proxy with our backend endpoint, our lambda.
 # Each method on an API gateway resource has an integration which specifies where incoming requests are routed. Add the following configuration to specify that requests to this method should be sent to the Lambda function.
+# The type parameter specifies that the integration type is AWS_PROXY, which means that the entire request is passed to the Lambda function. The uri parameter specifies the ARN of the Lambda function.
 resource "aws_api_gateway_integration" "lambda_integration" {
   rest_api_id             = aws_api_gateway_rest_api.go_lambda_api.id
   resource_id             = aws_api_gateway_resource.proxy.id
@@ -50,9 +32,9 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   uri                     = aws_lambda_function.go_lambda.invoke_arn
 }
 
-# By default any two AWS services have no access to one another, 
-# until access is explicitly granted. For Lambda functions, access is granted using the 
-# aws_lambda_permission resource. This lets the API gateway have access.
+# By default any two AWS services have no access to one another, until access is explicitly granted. 
+# For Lambda functions, access is granted using the aws_lambda_permission resource. 
+# This lets the API gateway have access to the function.
 resource "aws_lambda_permission" "api_permission" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
