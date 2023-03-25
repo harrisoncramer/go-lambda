@@ -33,5 +33,8 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+## Assets
+hello_world.zip
+
 ## Golang
 bin/*
