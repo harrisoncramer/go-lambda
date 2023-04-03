@@ -49,7 +49,7 @@ resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
 # We need to create a zip file of the binary to upload and run.
 data "archive_file" "go_lambda_archive" {
   type        = "zip"
-  source_file = "bin/go_lambda"
+  source_file = "../bin/go_lambda"
   output_path = "go_lambda.zip"
 }
 
