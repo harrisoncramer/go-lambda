@@ -18,3 +18,7 @@ Repository for a Golang HTTP JSON API running on AWS lambda and configured via T
 2. Run `terraform apply` to apply the changes and upload the binary. Confirm.
 3. POST to the endpoint: `curl -X POST https://mq4s9j0l8b.execute-api.us-east-2.amazonaws.com/test/hello -d '{ "name": "Harry" }'`
 4. Rip down the infrastructure (still in the infrastructure folder): `terraform destroy`
+
+## Helper Script
+1. Run `. bin/deploy` from the root repo (make sure to run within the existing shell with `.` or `source`)
+3. curl -X POST "$TF_URL/hello" -d '{ "name": "Harry" }'
