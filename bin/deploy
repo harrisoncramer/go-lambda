@@ -1,0 +1,5 @@
+#!/bin/bash
+
+make
+cd infrastructure
+terraform apply -auto-approve

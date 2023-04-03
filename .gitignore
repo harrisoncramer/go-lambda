@@ -37,5 +37,5 @@ terraform.rc
 hello_world.zip
 
 ## Golang
-bin/*
 *.zip
+assets/*
