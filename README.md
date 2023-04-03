@@ -15,3 +15,4 @@ Repository for a Golang HTTP JSON API running on AWS lambda and configured via T
 
 1. Run `make` to build the binary.
 2. Run `terraform apply` to apply the changes and upload the binary.
+3. POST to the endpoint: `curl -X POST https://mq4s9j0l8b.execute-api.us-east-2.amazonaws.com/test/hello -d '{ "name": "Harry" }'`
